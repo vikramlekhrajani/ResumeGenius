@@ -10,7 +10,8 @@ const ResumeUpload = ({ onATSGenerated }) => {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      if (selectedFile.type === 'application/pdf' || selectedFile.type === 'text/plain') {
+      const allowed = ['application/pdf', 'text/plain'];
+      if (allowed.includes(selectedFile.type)) {
         setFile(selectedFile);
         setError('');
       } else {
@@ -20,36 +21,61 @@ const ResumeUpload = ({ onATSGenerated }) => {
     }
   };
 
-  const handleUpload = () => {
+  const extractTextFromPDF = async (arrayBuffer) => {
+    try {
+      const pdfjsLib = await import('pdfjs-dist/build/pdf');
+      // Set workerSrc to CDN copy to avoid bundling large worker file
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item) => item.str).join(' ');
+        fullText += pageText + '\n';
+      }
+      return fullText;
+    } catch (err) {
+      console.error('PDF text extraction failed', err);
+      throw err;
+    }
+  };
+
+  const handleUpload = async () => {
     if (!file) {
       setError('Please select a file first');
       return;
     }
 
     setUploading(true);
-    const reader = new FileReader();
+    setError('');
 
-    reader.onload = (e) => {
-      try {
-        const content = e.target.result;
-        const atsResume = convertToATSFriendly(content);
+    try {
+      if (file.type === 'application/pdf') {
+        const arrayBuffer = await file.arrayBuffer();
+        const text = await extractTextFromPDF(arrayBuffer);
+        const atsResume = convertToATSFriendly(text);
         onATSGenerated(atsResume, file.name);
-        setUploading(false);
-        setFile(null);
-      } catch (err) {
-        setError('Error processing file: ' + err.message);
-        setUploading(false);
+      } else {
+        // text/plain
+        const text = await file.text();
+        const atsResume = convertToATSFriendly(text);
+        onATSGenerated(atsResume, file.name);
       }
-    };
-
-    reader.readAsText(file);
+      setFile(null);
+    } catch (err) {
+      setError('Error processing file: ' + (err.message || err));
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
     <div className="resume-upload">
       <h2>Upload Your Resume</h2>
       <p>Upload your existing resume to convert it to ATS-friendly format</p>
-      
+
       <div className="upload-area">
         <input
           type="file"

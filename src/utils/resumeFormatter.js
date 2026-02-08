@@ -1,15 +1,27 @@
 // Utility to convert resume to ATS-friendly format
 export const convertToATSFriendly = (resume) => {
-  // Remove complex formatting, special characters
-  let atsResume = resume.replace(/[^\w\s\n.,@-]/g, '');
-  
-  // Ensure proper line breaks and spacing
-  atsResume = atsResume
+  if (!resume || typeof resume !== 'string') return '';
+
+  // Replace smart quotes and non-printable characters
+  let text = resume.replace(/[\u2018\u2019\u201C\u201D]/g, "'");
+  text = text.replace(/[^\x20-\x7E\n]/g, ''); // keep printable ASCII and newlines
+
+  // Preserve emails, urls, phone-ish patterns; remove unusual punctuation
+  // remove sequences of repeated non-alphanumeric characters
+  text = text.replace(/\s+$/gm, '');
+
+  // Normalize spacing and trim each line
+  const lines = text
     .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join('\n');
-  
+    .map(line => line.replace(/\s+/g, ' ').trim())
+    .filter(line => line.length > 0);
+
+  // Collapse multiple heading separators (e.g., ---- or ****)
+  const cleaned = lines.map(line => line.replace(/[-*_]{3,}/g, '') ).join('\n');
+
+  // Final sanitization: ensure email/URLs and basic punctuation remain
+  const atsResume = cleaned.replace(/[^\w\d\s\-.,@:\/()\[\]#%&+;"'<>?=]/g, '');
+
   return atsResume;
 };
 
