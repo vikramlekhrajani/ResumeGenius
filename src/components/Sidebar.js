@@ -20,6 +20,18 @@ const Sidebar = ({ activeSection, onSectionChange }) => {
       label: 'Edit Resume',
       icon: '✏️',
       description: 'Modify & download'
+    },
+    {
+      id: 'linkedin',
+      label: 'LinkedIn',
+      icon: '🔗',
+      description: 'Connect account'
+    },
+    {
+      id: 'jobs',
+      label: 'Job Opportunities',
+      icon: '💼',
+      description: 'Find jobs'
     }
   ];
 

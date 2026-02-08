@@ -145,3 +145,24 @@
     padding: 1rem;
   }
 }
+
+.linkedin-success-message {
+  background: linear-gradient(135deg, #0a66c2 0%, #0084b1 100%);
+  color: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-top: 24px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -5,11 +5,14 @@ import ResumeUpload from './components/ResumeUpload';
 import TemplateSelector from './components/TemplateSelector';
 import ResumeEditor from './components/ResumeEditor';
 import ResumePreview from './components/ResumePreview';
+import LinkedInAuth from './components/LinkedInAuth';
+import JobRecommendations from './components/JobRecommendations';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('ats-friendly');
   const [currentResume, setCurrentResume] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [linkedInProfile, setLinkedInProfile] = useState(null);
 
   const handleATSGenerated = (atsContent, filename) => {
     setCurrentResume({
@@ -37,6 +40,21 @@ function App() {
         ...currentResume,
         content: updatedContent
       });
+    }
+  };
+
+  const handleLinkedInProfile = (profile) => {
+    setLinkedInProfile(profile);
+    // Auto-import skills and experience into resume
+    if (profile.skills && profile.skills.length > 0) {
+      const updatedResume = currentResume ? { ...currentResume } : { content: '' };
+      updatedResume.linkedInData = {
+        name: `${profile.firstName} ${profile.lastName}`,
+        headline: profile.headline,
+        skills: profile.skills,
+        experience: profile.experience
+      };
+      setCurrentResume(updatedResume);
     }
   };
 
@@ -119,6 +137,49 @@ function App() {
                   </button>
                   <button className="primary-btn" onClick={() => setCurrentSection('new-resume')}>
                     Create New Resume
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'linkedin':
+        return (
+          <div className="section-content">
+            <header className="section-header">
+              <h2>🔗 LinkedIn Integration</h2>
+              <p>Connect your LinkedIn account to auto-populate your resume</p>
+            </header>
+            <div className="section-body">
+              <LinkedInAuth onProfileFetch={handleLinkedInProfile} />
+              {linkedInProfile && (
+                <div className="linkedin-success-message">
+                  <p>✅ LinkedIn profile connected! Your data can now be used to populate your resume.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'jobs':
+        return (
+          <div className="section-content">
+            <header className="section-header">
+              <h2>💼 Job Opportunities</h2>
+              <p>Find jobs that match your skills and experience</p>
+            </header>
+            <div className="section-body">
+              {linkedInProfile ? (
+                <JobRecommendations linkedInProfile={linkedInProfile} />
+              ) : (
+                <div className="empty-state">
+                  <p>Connect your LinkedIn account first to see personalized job recommendations.</p>
+                  <button
+                    className="primary-btn"
+                    onClick={() => setCurrentSection('linkedin')}
+                  >
+                    Connect LinkedIn
                   </button>
                 </div>
               )}
