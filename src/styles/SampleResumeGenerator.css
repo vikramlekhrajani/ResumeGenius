@@ -1,0 +1,46 @@
+.sample-generator {
+  text-align: center;
+}
+
+.sample-generator h2 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.sample-generator > p {
+  margin: 0 0 1.5rem 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.generate-btn {
+  padding: 1rem 2.5rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+  margin-top: 1rem;
+}
+
+.generate-btn:hover {
+  background: #5568d3;
+}
+
+.sample-preview {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f0fff0;
+  border-radius: 5px;
+  border-left: 4px solid #667eea;
+}
+
+.success-message {
+  margin: 0;
+  color: #333;
+  font-weight: 500;
+}
