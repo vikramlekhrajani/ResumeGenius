@@ -85,6 +85,96 @@
   margin: 0 auto;
 }
 
+.preview-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.back-top-btn {
+  background: white;
+  border: 1px solid #ddd;
+  color: #333;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.preview-top-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ats-score-badge {
+  background: #fff3e0;
+  color: #a25a00;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.pdf-main-image {
+  text-align: center;
+  padding: 12px;
+}
+
+.main-pdf-image {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.thumbnail-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding: 8px 12px 0 12px;
+}
+
+.thumbnail-img {
+  width: 120px;
+  height: auto;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.thumbnail-img:hover {
+  transform: translateY(-4px);
+}
+
+.thumbnail-selected {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102,126,234,0.18);
+}
+
 .preview-container h2 {
   margin: 0 0 0.5rem 0;
   color: #333;
@@ -152,25 +242,147 @@
 .ats-preview-section {
   text-align: left;
   margin-bottom: 2rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
 }
 
 .ats-preview-section h3 {
   margin: 0 0 1rem 0;
   color: #333;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
+}
+
+.format-selector {
+  margin-bottom: 2rem;
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+}
+
+.format-selector h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+.format-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.format-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.format-btn:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.format-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+}
+
+.format-icon {
+  font-size: 18px;
+}
+
+.format-name {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .format-name {
+    display: inline;
+  }
+}
+
+.visual-preview {
+  background: white;
+  border-radius: 6px;
+  padding: 0;
+  margin-bottom: 2rem;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.visual-preview h3 {
+  margin: 0;
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.resume-preview-iframe {
+  width: 100%;
+  height: 700px;
+  border: none;
+  display: block;
+  background: white;
+  border-radius: 6px;
+}
+
+.edit-text-section {
+  background: white;
+  border-radius: 6px;
+  padding: 0;
+  border: 1px solid #ddd;
+  overflow: hidden;
+}
+
+.edit-text-section details {
+  cursor: pointer;
+}
+
+.edit-text-section summary {
+  padding: 12px 15px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+  font-weight: 500;
+  font-size: 13px;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.edit-text-section summary:hover {
+  background: #efefef;
+}
+
+.edit-text-section details[open] summary {
+  background: #667eea;
+  color: white;
+  border-bottom-color: #667eea;
 }
 
 .ats-preview-text {
   width: 100%;
-  min-height: 400px;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  min-height: 300px;
+  padding: 15px;
+  border: none;
+  border-radius: 0;
   font-family: 'Courier New', monospace;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.5;
   resize: vertical;
+  margin: 0;
 }
 
 .preview-hint {
@@ -186,6 +398,82 @@
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 2rem;
+}
+
+.ats-score-panel {
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.ats-score-large {
+  font-size: 48px;
+  font-weight: 800;
+  color: #2b6cb0;
+  margin: 12px 0;
+}
+
+.ats-suggestions ul,
+.ats-details ul {
+  margin: 0.5rem 0 0 1rem;
+}
+
+.before-after-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 12px 0 18px 0;
+  align-items: start;
+}
+
+.before-panel h4,
+.after-panel h4 {
+  margin: 0 0 8px 0;
+}
+
+.compare-image {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.compare-iframe {
+  width: 100%;
+  height: 260px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.comparison-textareas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.comp-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+  resize: vertical;
+}
+
+@media (max-width: 900px) {
+  .before-after-grid,
+  .comparison-textareas {
+    grid-template-columns: 1fr;
+  }
+  .compare-iframe {
+    height: 200px;
+  }
 }
 
 .download-btn,
@@ -208,6 +496,24 @@
 .download-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.text-download {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.text-download:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.pdf-download {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.pdf-download:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
 }
 
 .edit-btn {

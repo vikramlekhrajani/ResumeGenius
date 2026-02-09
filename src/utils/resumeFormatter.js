@@ -20,7 +20,7 @@ export const convertToATSFriendly = (resume) => {
   const cleaned = lines.map(line => line.replace(/[-*_]{3,}/g, '') ).join('\n');
 
   // Final sanitization: ensure email/URLs and basic punctuation remain
-  const atsResume = cleaned.replace(/[^\w\d\s\-.,@:\/()\[\]#%&+;"'<>?=]/g, '');
+  const atsResume = cleaned.replace(/[^\w\d\s\-.,@:/()[\]#%&+;"'<>?=]/g, '');
 
   return atsResume;
 };
@@ -125,4 +125,61 @@ export const SAMPLE_RESUME_JSON = {
       graduationDate: 'May 2018'
     }
   ]
+};
+
+// Simple ATS scoring heuristic - returns score (0-100) and suggestions
+export const computeATSScore = (content) => {
+  const suggestions = [];
+  if (!content || typeof content !== 'string' || content.trim().length === 0) {
+    return { score: 0, suggestions: ['No resume content detected'] };
+  }
+
+  const text = content.toLowerCase();
+
+  // Contact info
+  const hasEmail = /[\w.-]+@[\w.-]+\.[a-z]{2,}/i.test(content);
+  const hasPhone = /\+?\d[\d\s().-]{6,}\d/.test(content);
+  const hasLinkedIn = /linkedin\.com/i.test(content);
+
+  // Summary
+  const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+  const summary = lines.slice(1, 4).join(' ');
+  const hasSummary = summary.length > 30;
+
+  // Skills detection (look for 'skills' header or comma-separated tech list)
+  let skills = [];
+  const skillsMatch = content.match(/(skills|technical skills|core competencies|expertise)[\s:\n]*([\s\S]{0,200})/i);
+  if (skillsMatch && skillsMatch[2]) {
+    skills = skillsMatch[2].split(/[\n,;•]/).map(s => s.trim()).filter(Boolean).slice(0, 30);
+  } else {
+    // fallback: find common tech words
+    const techWords = ['react', 'node', 'javascript', 'python', 'aws', 'docker', 'kubernetes', 'sql', 'java'];
+    skills = techWords.filter(w => text.includes(w));
+  }
+
+  // Experience detection: look for years or 'experience' header
+  const hasExperienceHeader = /(experience|professional experience|employment history)/i.test(content);
+  const yearMatches = content.match(/\b(19|20)\d{2}\b/g) || [];
+  const experienceCount = hasExperienceHeader ? Math.max(1, yearMatches.length / 2) : Math.floor(yearMatches.length / 2);
+
+  // Scoring breakdown
+  let score = 0;
+  score += hasEmail ? 15 : 0;
+  score += hasPhone ? 10 : 0;
+  score += hasLinkedIn ? 5 : 0;
+  score += hasSummary ? 15 : 0;
+  score += Math.min(20, skills.length * 4);
+  score += Math.min(30, Math.round(experienceCount * 5));
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  if (!hasEmail) suggestions.push('Add an email address');
+  if (!hasPhone) suggestions.push('Add a phone number');
+  if (!hasSummary) suggestions.push('Add a short professional summary');
+  if (skills.length < 5) suggestions.push('Include more relevant skills (comma-separated list)');
+  if (experienceCount < 1) suggestions.push('Add professional experience or projects with date ranges');
+
+  if (suggestions.length === 0) suggestions.push('Good job — resume includes key ATS-friendly elements');
+
+  return { score, suggestions, details: { email: hasEmail, phone: hasPhone, linkedin: hasLinkedIn, skillsCount: skills.length, experienceCount } };
 };

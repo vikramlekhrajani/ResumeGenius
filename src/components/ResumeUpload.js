@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { convertToATSFriendly } from '../utils/resumeFormatter';
+import { convertToATSFriendly, computeATSScore } from '../utils/resumeFormatter';
+import { downloadResume, downloadResumePDF } from '../utils/downloadHelper';
+import { generateResumeVisualPreview } from '../utils/templatePreviewGenerator';
 import '../styles/ResumeUpload.css';
 
 const ResumeUpload = ({ onATSGenerated }) => {
@@ -10,7 +12,17 @@ const ResumeUpload = ({ onATSGenerated }) => {
   const [previewPages, setPreviewPages] = useState([]);
   const [extractedText, setExtractedText] = useState('');
   const [atsContent, setAtsContent] = useState('');
+  const [selectedFormat, setSelectedFormat] = useState('professional');
+  const [selectedTab, setSelectedTab] = useState('preview');
+  const [selectedPreviewIndex, setSelectedPreviewIndex] = useState(0);
   const canvasRef = useRef(null);
+
+  const formats = [
+    { id: 'professional', name: 'Professional', icon: '📋' },
+    { id: 'technical', name: 'Technical', icon: '💻' },
+    { id: 'creative', name: 'Creative', icon: '🎨' },
+    { id: 'executive', name: 'Executive', icon: '🎯' }
+  ];
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -157,19 +169,46 @@ const ResumeUpload = ({ onATSGenerated }) => {
     }
   };
 
-  const handleDownload = () => {
+  const getFilename = (format) => {
+    if (!file) return 'resume';
+    const baseName = file.name.replace(/\.[^/.]+$/, '');
+    return format === 'text' 
+      ? `${baseName}_ATS-Friendly.txt`
+      : `${baseName}_ATS-Friendly.pdf`;
+  };
+
+  const handleDownloadText = () => {
     if (atsContent) {
-      onATSGenerated(atsContent, file.name);
-      setFile(null);
-      setPreviewMode(false);
-      setPreviewPages([]);
-      setExtractedText('');
-      setAtsContent('');
+      downloadResume(atsContent, getFilename('text'));
+      // Reset form after download
+      setTimeout(() => {
+        setFile(null);
+        setPreviewMode(false);
+        setPreviewPages([]);
+        setExtractedText('');
+        setAtsContent('');
+      }, 500);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (atsContent) {
+      downloadResumePDF(atsContent, getFilename('pdf'));
+      // Reset form after download
+      setTimeout(() => {
+        setFile(null);
+        setPreviewMode(false);
+        setPreviewPages([]);
+        setExtractedText('');
+        setAtsContent('');
+      }, 500);
     }
   };
 
   const handleEdit = () => {
-    onATSGenerated(atsContent, file.name);
+    if (atsContent) {
+      onATSGenerated(atsContent, file.name);
+    }
   };
 
   const handleBackToUpload = () => {
@@ -181,43 +220,179 @@ const ResumeUpload = ({ onATSGenerated }) => {
   };
 
   if (previewMode) {
+    const atsResult = computeATSScore(atsContent || extractedText || '');
+
     return (
       <div className="resume-upload">
         <div className="preview-container">
+          <div className="preview-top-bar">
+            <button className="back-top-btn" onClick={handleBackToUpload} aria-label="Back to upload">
+              ← Back to Upload
+            </button>
+            <div className="preview-top-controls">
+              {selectedTab === 'ats' && (
+                <div className="ats-score-badge">ATS Score: {atsResult.score}%</div>
+              )}
+              <div className="tab-buttons">
+                <button
+                  className={`tab-btn ${selectedTab === 'preview' ? 'active' : ''}`}
+                  onClick={() => setSelectedTab('preview')}
+                >
+                  Preview
+                </button>
+                <button
+                  className={`tab-btn ${selectedTab === 'ats' ? 'active' : ''}`}
+                  onClick={() => setSelectedTab('ats')}
+                >
+                  ATS Score
+                </button>
+              </div>
+            </div>
+          </div>
           <h2>Resume Preview</h2>
           <p>Review your resume before converting to ATS format</p>
 
-          {previewPages.length > 0 && (
-            <div className="pdf-preview-section">
-              <h3>Original Document Preview</h3>
-              <div className="pdf-pages-grid">
-                {previewPages.map((page, idx) => (
-                  <div key={idx} className="pdf-page-container">
-                    <img src={page} alt={`Page ${idx + 1}`} className="pdf-page-image" />
-                    <span className="page-number">Page {idx + 1}</span>
+          {selectedTab === 'preview' && (
+            <>
+              {previewPages.length > 0 && (
+                <div className="pdf-preview-section">
+                  <h3>Original Document Preview</h3>
+                  <div className="pdf-main-image">
+                    <img src={previewPages[selectedPreviewIndex]} alt={`Page ${selectedPreviewIndex + 1}`} className="main-pdf-image" />
                   </div>
-                ))}
+                  <div className="thumbnail-row">
+                    {previewPages.map((page, idx) => (
+                      <img
+                        key={idx}
+                        src={page}
+                        alt={`Page ${idx + 1}`}
+                        className={`thumbnail-img ${selectedPreviewIndex === idx ? 'thumbnail-selected' : ''}`}
+                        onClick={() => setSelectedPreviewIndex(idx)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="ats-preview-section">
+                <div className="format-selector">
+                  <h3>Select Resume Format</h3>
+                  <div className="format-buttons">
+                    {formats.map((format) => (
+                      <button
+                        key={format.id}
+                        className={`format-btn ${selectedFormat === format.id ? 'active' : ''}`}
+                        onClick={() => setSelectedFormat(format.id)}
+                        title={format.name}
+                      >
+                        <span className="format-icon">{format.icon}</span>
+                        <span className="format-name">{format.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="visual-preview">
+                  <h3>Resume Preview</h3>
+                  <iframe
+                    title="Resume preview"
+                    srcDoc={generateResumeVisualPreview(atsContent, selectedFormat)}
+                    className="resume-preview-iframe"
+                    sandbox="allow-same-origin"
+                  />
+                </div>
+
+                <div className="edit-text-section">
+                  <details>
+                    <summary>View/Edit Raw Text</summary>
+                    <textarea
+                      className="ats-preview-text"
+                      value={atsContent}
+                      onChange={(e) => setAtsContent(e.target.value)}
+                      placeholder="ATS formatted resume"
+                    />
+                  </details>
+                </div>
+              </div>
+            </>
+          )}
+
+          {selectedTab === 'ats' && (
+            <div className="ats-score-panel">
+              <h3>ATS Analysis</h3>
+              <div className="ats-score-large">{atsResult.score}%</div>
+
+              <div className="before-after-grid">
+                <div className="before-panel">
+                  <h4>Original (Before)</h4>
+                  {previewPages.length > 0 ? (
+                    <img src={previewPages[selectedPreviewIndex]} alt={`Original page ${selectedPreviewIndex + 1}`} className="compare-image" />
+                  ) : (
+                    <div className="compare-text-block">
+                      <pre className="compare-text">{extractedText || 'No original text available'}</pre>
+                    </div>
+                  )}
+                </div>
+                <div className="after-panel">
+                  <h4>ATS Result (After)</h4>
+                  <div className="compare-visual">
+                    <iframe
+                      title="ATS visual"
+                      srcDoc={generateResumeVisualPreview(atsContent, selectedFormat)}
+                      className="compare-iframe"
+                      sandbox="allow-same-origin"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="comparison-textareas">
+                <div className="comp-col">
+                  <h5>Before (extracted)</h5>
+                  <textarea readOnly value={extractedText} className="comp-textarea" />
+                </div>
+                <div className="comp-col">
+                  <h5>After (ATS)</h5>
+                  <textarea readOnly value={atsContent} className="comp-textarea" />
+                </div>
+              </div>
+
+              <div className="ats-suggestions">
+                <h4>Suggestions</h4>
+                <ul>
+                  {atsResult.suggestions && atsResult.suggestions.length > 0 ? (
+                    atsResult.suggestions.map((s, i) => <li key={i}>{s}</li>)
+                  ) : (
+                    <li>No suggestions — this looks good.</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="ats-details">
+                <h4>Details</h4>
+                <ul>
+                  <li>Email Found: {atsResult.details.hasEmail ? 'Yes' : 'No'}</li>
+                  <li>Phone Found: {atsResult.details.hasPhone ? 'Yes' : 'No'}</li>
+                  <li>LinkedIn Found: {atsResult.details.hasLinkedIn ? 'Yes' : 'No'}</li>
+                  <li>Skills Count: {atsResult.details.skillsCount}</li>
+                  <li>Experience Entries: {atsResult.details.experienceCount}</li>
+                </ul>
               </div>
             </div>
           )}
 
-          <div className="ats-preview-section">
-            <h3>ATS Converted Content</h3>
-            <textarea
-              className="ats-preview-text"
-              value={atsContent}
-              onChange={(e) => setAtsContent(e.target.value)}
-              placeholder="ATS formatted resume will appear here"
-            />
-            <p className="preview-hint">You can edit the content above before downloading</p>
-          </div>
-
           <div className="preview-actions">
             <button
-              className="download-btn"
-              onClick={handleDownload}
+              className="download-btn text-download"
+              onClick={handleDownloadText}
             >
-              ✓ Download ATS Resume
+              📥 Download as TXT
+            </button>
+            <button
+              className="download-btn pdf-download"
+              onClick={handleDownloadPDF}
+            >
+              📄 Download as PDF
             </button>
             <button
               className="edit-btn"
@@ -225,12 +400,7 @@ const ResumeUpload = ({ onATSGenerated }) => {
             >
               Edit in Editor
             </button>
-            <button
-              className="back-btn"
-              onClick={handleBackToUpload}
-            >
-              ← Back to Upload
-            </button>
+            
           </div>
         </div>
       </div>
