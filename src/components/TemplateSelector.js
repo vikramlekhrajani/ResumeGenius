@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SAMPLE_ATS_RESUME } from '../utils/resumeFormatter';
+import { generateTemplatePreview, getTemplateInfo } from '../utils/templatePreviewGenerator';
 import '../styles/TemplateSelector.css';
 
 const templates = [
@@ -56,10 +57,19 @@ Leadership, Strategic Planning, Team Management, P&L Responsibility, Process Opt
 
 const TemplateSelector = ({ onTemplateSelect }) => {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [previewTemplate, setPreviewTemplate] = useState(null);
 
   const handleSelectTemplate = (template) => {
     setSelectedTemplate(template.id);
     onTemplateSelect(template.content, template.name);
+  };
+
+  const handleShowPreview = (templateId) => {
+    setPreviewTemplate(templateId);
+  };
+
+  const handleClosePreview = () => {
+    setPreviewTemplate(null);
   };
 
   return (
@@ -68,25 +78,69 @@ const TemplateSelector = ({ onTemplateSelect }) => {
       <p>Choose a template and customize it with your information</p>
 
       <div className="templates-grid">
-        {templates.map((template) => (
-          <div
-            key={template.id}
-            className={`template-card ${selectedTemplate === template.id ? 'selected' : ''}`}
-            onClick={() => handleSelectTemplate(template)}
-          >
-            <div className="template-header">
-              <h3>{template.name}</h3>
-              <p>{template.description}</p>
+        {templates.map((template) => {
+          const info = getTemplateInfo(template.id);
+          return (
+            <div
+              key={template.id}
+              className={`template-card ${selectedTemplate === template.id ? 'selected' : ''}`}
+              onClick={() => handleSelectTemplate(template)}
+            >
+              <div className="template-header">
+                <div className="template-icon">{info.icon}</div>
+                <h3>{info.name}</h3>
+                <p>{info.description}</p>
+              </div>
+
+              <div className="template-preview">
+                <iframe
+                  title={`${template.name} preview`}
+                  srcDoc={generateTemplatePreview(template.id)}
+                  className="preview-iframe"
+                  sandbox="allow-same-origin"
+                />
+              </div>
+
+              <div className="template-features">
+                {info.features.map((feature, idx) => (
+                  <span key={idx} className="feature-tag">
+                    ✓ {feature}
+                  </span>
+                ))}
+              </div>
+
+              <button
+                className={`select-btn ${selectedTemplate === template.id ? 'selected' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectTemplate(template);
+                }}
+              >
+                {selectedTemplate === template.id ? '✓ Selected' : 'Select This'}
+              </button>
             </div>
-            <div className="template-preview">
-              <pre>{template.content.split('\n').slice(0, 5).join('\n')}...</pre>
-            </div>
-            <button className="select-btn">
-              {selectedTemplate === template.id ? '✓ Selected' : 'Select'}
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {previewTemplate && (
+        <div className="preview-modal" onClick={handleClosePreview}>
+          <div className="preview-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={handleClosePreview}>✕</button>
+            <h3>
+              {templates.find(t => t.id === previewTemplate)?.name} Template Preview
+            </h3>
+            <div className="preview-modal-body">
+              <iframe
+                title={`${previewTemplate} full preview`}
+                srcDoc={generateTemplatePreview(previewTemplate)}
+                className="preview-iframe-large"
+                sandbox="allow-same-origin"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
