@@ -431,7 +431,7 @@ export const generateResumeVisualPreview = (resumeContent, format = 'professiona
     // Skills section - render as list
     if (/skills/i.test(stitle)) {
       const joined = section.items.join(' | ');
-      const parts = joined.split(/[,|•\-\u2022]+/).map(p => p.trim()).filter(Boolean);
+      const parts = joined.split(/[,|•\u2022-]+/).map(p => p.trim()).filter(Boolean);
       html += `<div class="item"><ul>`;
       parts.forEach((p) => { html += `<li>${escapeHtml(p)}</li>`; });
       html += `</ul></div>`;
